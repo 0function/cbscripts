@@ -1,2 +1,1 @@
-# cbscripts
-Some scripts for Code Browser
+Here's scripts for Code Browser text editor and syntax highlighting for more languages. Scripts include word completing, non real time column editing mode and line swapping/dragging.

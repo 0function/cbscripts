@@ -1,0 +1,198 @@
+def languages
+//[of]:	Template
+// Template for languages that have the “standard” strings and/or operators.
+def common
+	prototype	= languages.default
+	caption	= ────────────────
+	stylizer	= generic
+	hexa-prefix	= 0x
+	string-delimiter	= "
+	string-escape-char	= \
+	// This is default since:	1) If a language supports multi-line strings, then this must be set.
+	//	2) Syntax highlighting of (correct code in) a language without multi-line strings doesn't break, even if someone forgets to turn this off.
+	//	3) This may be desirable also for languages without multi-line strings, because “forgot closing quote at the end of line” -errors become apparent.
+	multi-line-strings	= true
+	operators	= ()[]{}=<>+-*/^|~.,:;!?@#&$%%
+end
+//[cf]
+//[of]:	Column editing mode
+def column-and-multi-cursor
+	prototype	= languages.default
+	caption	= Column editing mode
+	elastic-tabstops	= true
+	show-tabs	= true
+end
+//[cf]
+// All of the languages don't fit into the language menu simultaneously. Note that commenting whole section is not done by commenting just it's title.
+//[of]://	Ada
+//def ada
+//	prototype	= languages.common
+//	caption	= Ada
+//	patterns	= *.ada;*.ads;*.adb
+//	line-comment	= --
+//	statements	= abort abstract accept access aliased all and array at begin body case constant declare delay delta digits do else elsif end entry exception exit for function generic goto if in is limited loop new not null of others out or package pragma private procedure protected raise range record renames requeue return reverse select separate subtype tagged task terminate then type until use when while with
+//end
+//[cf]
+//[of]:	AHK
+// Based on revised but still outdated keyword lists from AHK's predecessor AutoIt3.
+def ahk
+	prototype	= languages.common
+	caption	= AutoHotkey
+	patterns	= *.ahk;*.au3
+	line-comment	= ;
+	string-escape-char	= `
+	
+	ignore-case	= true
+	statements	= and break byref case continue dim do else elseif endfunc endif endselect exit exitloop gosub goto for func global if local loop next not or return select step then to until wend while static
+	constants	=	abs sqrt pi acos asin atan sin cos tan asc chr AllowSameLineComments ClipboardTimeout CommentFlag ErrorStdOut EscapeChar HotkeyInterval HotkeyModIfierTimeout Hotstring Include IncludeAgain IfWinActive IfWinExist IfWinNotActive IfWinNotExist InstallKeybdHook InstallMouseHook KeyHistory MaxHotkeysPerInterval MaxMem MaxThreads MaxThreadsBuffer MaxThreadsPerHotkey NoEnv NoTrayIcon Persistent SingleInstance UseHook WinActivateForce AutoTrim BlockInput Click ClipWait Control ControlClick ControlFocus ControlGet ControlGetFocus ControlGetPos ControlGetText ControlMove ControlSend ControlSendRaw ControlSetText CoordMode Critical DetectHiddenText DetectHiddenWindows DllCall Drive DriveGet DriveSpaceFree Edit EndRepeat EnvAdd EnvDiv EnvGet EnvMult EnvSet EnvSub EnvUpdate Exit ExitApp FileAppend FileCopy FileCopyDir FileCreateDir FileCreateShortcut FileDelete FileGetAttrib FileGetShortcut FileGetSize FileGetTime FileGetVersion FileInstall FileMove FileMoveDir FileRead FileReadLine FileRecycle FileRecycleEmpty FileRemoveDir FileSelectFile FileSelectFolder FileSetAttrib FileSetTime FormatTime GetKeyState GroupActivate GroupAdd GroupClose GroupDeactivate Gui GuiControl GuiControlGet HideAutoItWin Hotkey IfEqual IfExist IfGreater IfGreaterOrEqual IfInString IfLess IfLessOrEqual IfMsgBox IfNotEqual IfNotExist IfNotInString IfWinActive IfWinExist IfWinNotActive IfWinNotExist ImageSearch IniDelete IniRead IniWrite Input InputBox IsLabel KeyHistory KeyWait ListHotkeys ListLines ListVars Menu MouseClick MouseClickDrag MouseGetPos MouseMove MsgBox NumGet NumPut OnExit OnMessage OutputDebug Pause PixelGetColor PixelSearch PostMessage Process Progress Random RegDelete RegExMatch RegExReplace RegisterCallback RegRead RegWrite Reload Repeat Run RunAs RunWait Send SendMessage SendEvent SendInput SendMode SendPlay SendRaw SetBatchLines SetCapsLockState SetControlDelay SetDefaultMouseSpeed SetEnv SetFormat SetKeyDelay SetMouseDelay SetNumLockState SetScrollLockState SetStoreCapslockMode SetTimer SetTitleMatchMode SetWinDelay SetWorkingDir Shutdown Sleep Sort SoundBeep SoundGet SoundGetWaveVolume SoundPlay SoundSet SoundSetWaveVolume SplashImage SplashTextOff SplashTextOn SplitPath StatusBarGetText StatusBarWait StringCaseSense StringGetPos StringLeft StringLen StringLower StringMid StringReplace StringRight StringSplit StringTrimLeft StringTrimRight StringUpper Suspend SysGet Thread ToolTip Transform TrayTip URLDownloadToFile VarSetCapcity WinActivate WinActivateBottom WinClose WinGet WinGetActiveStats WinGetActiveTitle WinGetClass WinGetPos WinGetText WinGetTitle WinHide WinKill WinMaximize WinMenuSelectItem WinMinimize WinMinimizeAll WinMinimizeAllUndo WinMove WinRestore WinSet WinSetTitle WinShow WinWait WinWaitActive WinWaitClose WinWaitNotActive SubStr ComObjCreate StrReplace ErrorLevel%
+			A_AhkPath A_AhkVersion A_AppData A_AppDataCommon A_AutoTrim A_BatchLines A_CaretX A_CaretY A_ComputerName A_ControlDelay A_Cursor A_DD A_DDD A_DDDD A_DefaultMouseSpeed A_Desktop A_DesktopCommon A_DetectHiddenText A_DetectHiddenWindows A_EndChar A_ExitReason A_FormatFloat A_FormatInteger A_Gui A_GuiControl A_EventInfo A_GuiX A_GuiY A_GuiEvent A_GuiControlEvent A_GuiHeight A_GuiWidth A_Hour A_IconFile A_IconHidden A_IconNumber A_IconTip A_Index A_IPAddress1 A_IPAddress2 A_IPAddress3 A_IPAddress4 A_ISAdmin A_IsCompiled A_IsPaused A_IsCritical A_IsSuspended A_KeyDelay A_Language A_LastError A_LineNumber A_LineFile A_LoopField A_LoopFileAttrib A_LoopFileDir A_LoopFileExt A_LoopFileFullPath A_LoopFileLongPath A_LoopFileName A_LoopFileShortName A_LoopFileShortPath A_LoopFileSize A_LoopFileSizeKB A_LoopFileSizeMB A_LoopFileTimeAccessed A_LoopFileTimeCreated A_LoopFileTimeModified A_LoopReadLine A_LoopRegKey A_LoopRegName A_LoopRegSubkey A_LoopRegTimeModified A_LoopRegType A_MDAY A_Min A_MM A_MMM A_MMMM A_MON A_MouseDelay A_MyDocuments A_Now A_NowUTC A_NumBatchLines A_OSType A_OSVersion A_PriorHotkey ProgramFiles A_ProgramFiles A_Programs A_ProgramsCommon A_ScreenHeight A_ScreenWidth A_ScriptDir A_ScriptFullPath A_ScriptName A_Sec A_Space A_StartMenu A_StartMenuCommon A_Startup A_StartupCommon A_StringCaseSense A_Tab A_Temp A_ThisHotkey  A_ThisFunc  A_ThisLabel A_ThisMenu A_ThisMenuItem A_ThisMenuItemPos A_TickCount A_TimeIdle A_TimeIdlePhysical A_TimeSincePriorHotkey A_TimeSinceThisHotkey A_TitleMatchMode A_TitleMatchModeSpeed A_UserName A_WDay A_WinDelay A_WinDir A_WorkingDir A_YDay A_YEAR A_YWeek A_YYYY Clipboard ComSpec ErrorLevel True False%
+			ahk_class ahk_id ahk_pid ahk_exe ahk_group
+//	It seems not to be possible to highlight these properly, because only ascii letters and underscore can be part of a keyword.
+//	{!} {#} {^} {{} {}} {+} {alt} {altdown} {altup} {appskey} {asc} {backspace} {browser_back} {browser_favorites} {browser_forward} {browser_home} {browser_refresh} {browser_search} {browser_stop} {bs} {capslock} {ctrlbreak} {ctrldown} {ctrlup} {del} {delete} {down} {end} {enter} {esc} {escape} {f1} {f10} {f11} {f12} {f2} {f3} {f4} {f5} {f6} {f7} {f8} {f9} {home} {ins} {insert} {lalt} {launch_app1} {launch_app2} {launch_mail} {launch_media} {lctrl} {left} {lshift} {lwin} {lwindown} {media_next} {media_play_pause} {media_prev} {media_stop} {numlock} {numpad0} {numpad1} {numpad2} {numpad3} {numpad4} {numpad5} {numpad6} {numpad7} {numpad8} {numpad9} {numpadadd} {numpaddiv} {numpaddot} {numpadenter} {numpadmult} {numpadsub} {pause} {pgdn} {pgup} {printscreen} {ralt} {rctrl} {right} {rshift} {rwin} {rwindown} {scrolllock} {shiftdown} {shiftup} {sleep} {space} {tab} {up} {volume_down} {volume_mute} {volume_up}
+end
+//[cf]
+//[of]:	F#
+def fsharp
+	prototype	= languages.common
+	caption	= F#
+	patterns	= *.fs
+	line-comment	= //
+	open-comment	= (*
+	close-comment	= *)
+	statements	= abstract and as assert base begin class default delegate do done downcast downto elif else end exception extern false finally fixed for fun function global if in inherit inline interface internal lazy let match member module mutable namespace new not null of open or override private public rec return select static struct then to true try type upcast use val void when while with yield
+	// Reserved but unused:
+	constants	= asr land lor lsl lsr lxor mod sig atomic break checked component const constraint constructor continue eager event external fixed functor include method mixin object parallel process protected pure sealed tailcall trait virtual volatile
+end
+//[cf]
+//[of]://	Fortran
+//def fortran
+//	prototype	= languages.common
+//	caption	= Fortran
+//	patterns	= *.f;*.for;*.f90;*.f95;*.f2k
+//	line-comment	= //
+//	open-comment	= /*
+//	close-comment	= */
+//	statements	= access action advance allocatable allocate apostrophe assign assignment associate asynchronous backspace bind blank blockdata call case character class close common complex contains continue cycle data deallocate decimal delim default dimension direct do dowhile double doubleprecision else elseif elsewhere encoding end endassociate endblockdata enddo endfile endforall endfunction endif endinterface endmodule endprogram endselect endsubroutine endtype endwhere entry eor equivalence err errmsg exist exit external file flush fmt forall form format formatted function go goto id if implicit in include inout integer inquire intent interface intrinsic iomsg iolength iostat kind len logical module name named namelist nextrec nml none nullify number only open opened operator optional out pad parameter pass pause pending pointer pos position precision print private program protected public quote read readwrite real rec recl recursive result return rewind save select selectcase selecttype sequential sign size stat status stop stream subroutine target then to type unformatted unit use value volatile wait where while write
+//	constants	= abs achar acos acosd adjustl adjustr aimag aimax0 aimin0 aint ajmax0 ajmin0 akmax0 akmin0 all allocated alog alog10 amax0 amax1 amin0 amin1 amod anint any asin asind associated atan atan2 atan2d atand bitest bitl bitlr bitrl bjtest bit_size bktest break btest cabs ccos cdabs cdcos cdexp cdlog cdsin cdsqrt ceiling cexp char clog cmplx conjg cos cosd cosh count cpu_time cshift csin csqrt dabs dacos dacosd dasin dasind datan datan2 datan2d datand date date_and_time dble dcmplx dconjg dcos dcosd dcosh dcotan ddim dexp dfloat dflotk dfloti dflotj digits dim dimag dint dlog dlog10 dmax1 dmin1 dmod dnint dot_product dprod dreal dsign dsin dsind dsinh dsqrt dtan dtand dtanh eoshift epsilon errsns exp exponent float floati floatj floatk floor fraction free huge iabs iachar iand ibclr ibits ibset ichar idate idim idint idnint ieor ifix iiabs iiand iibclr iibits iibset iidim iidint iidnnt iieor iifix iint iior iiqint iiqnnt iishft iishftc iisign ilen imax0 imax1 imin0 imin1 imod index inint inot int int1 int2 int4 int8 iqint iqnint ior ishft ishftc isign isnan izext jiand jibclr jibits jibset jidim jidint jidnnt jieor jifix jint jior jiqint jiqnnt jishft jishftc jisign jmax0 jmax1 jmin0 jmin1 jmod jnint jnot jzext kiabs kiand kibclr kibits kibset kidim kidint kidnnt kieor kifix kind kint kior kishft kishftc kisign kmax0 kmax1 kmin0 kmin1 kmod knint knot kzext lbound leadz len len_trim lenlge lge lgt lle llt log log10 logical lshift malloc matmul max max0 max1 maxexponent maxloc maxval merge min min0 min1 minexponent minloc minval mod modulo mvbits nearest nint not nworkers number_of_processors pack popcnt poppar precision present product radix random random_number random_seed range real repeat reshape rrspacing rshift scale scan secnds selected_int_kind selected_real_kind set_exponent shape sign sin sind sinh size sizeof sngl snglq spacing spread sqrt sum system_clock tan tand tanh tiny transfer transpose trim ubound unpack verify
+//	types	= cdabs cdcos cdexp cdlog cdsin cdsqrt cotan cotand dcmplx dconjg dcotan dcotand decode dimag dll_export dll_import doublecomplex dreal dvchk encode find flen flush getarg getcharqq getcl getdat getenv gettim hfix ibchng identifier imag int1 int2 int4 intc intrup invalop iostat_msg isha ishc ishl jfix lacfar locking locnear map nargs nbreak ndperr ndpexc offset ovefl peekcharqq precfill prompt qabs qacos qacosd qasin qasind qatan qatand qatan2 qcmplx qconjg qcos qcosd qcosh qdim qexp qext qextd qfloat qimag qlog qlog10 qmax1 qmin1 qmod qreal qsign qsin qsind qsinh qsqrt qtan qtand qtanh ran rand randu rewrite segment setdat settim system timer undfl unlock union val virtual volatile zabs zcos zexp zlog zsin zsqrt
+//end
+//[cf]
+//[of]:	Haskell
+def haskell
+	prototype	= languages.common
+	caption	= Haskell
+	patterns	= *.hs;*.lhs;*.as;*.las;*.fr
+	line-comment	= --
+	open-comment	= {-
+	close-comment	= -}
+	statements	= as case class data default deriving do else hiding if import in infix infixl infixr instance let module newtype of proc qualified rec then type where _
+end
+//[cf]
+//[of]:	Lisp
+// Some variants of Lisp like Scheme and Clojure have dashes in their keywords which severly reduces quality of syntax highlighting in CB. Hence this is just Lisp.
+def lisp
+	prototype	= languages.common
+	caption	= Lisp
+	patterns	= *.lisp;*.lsp
+	line-comment	= ;
+	statements	= not defun princ eval apply funcall quote identity function complement backquote lambda set setq setf defun defmacro gensym make symbol intern symbol name symbol value symbol plist get getf putprop remprop hash make array aref car cdr caar cadr cdar cddr caaar caadr cadar caddr cdaar cdadr cddar cdddr caaaar caaadr caadar caaddr cadaar cadadr caddar cadddr cdaaar cdaadr cdadar cdaddr cddaar cddadr cdddar cddddr cons list append reverse last nth nthcdr member assoc subst sublis nsubst  nsublis remove length list length mapc mapcar mapl maplist mapcan mapcon rplaca rplacd nconc delete atom symbolp numberp boundp null listp consp minusp zerop plusp evenp oddp eq eql equal cond case and or let l if prog prog1 prog2 progn go return do dolist dotimes catch throw error cerror break continue errset baktrace evalhook truncate float rem min max abs sin cos tan expt exp sqrt random logand logior logxor lognot bignums logeqv lognand lognor logorc2 logtest logbitp logcount integer length nil
+end
+//[cf]
+//[of]:	Matlab
+def matlab
+	prototype	= languages.common
+	caption	= Mᴀᴛʟᴀʙ
+	patterns	= *.m
+	line-comment	= %%
+	statements	= break case catch continue else elseif end for function global if otherwise persistent return switch try while
+end
+//[cf]
+//[of]:	ML family
+def ml
+	prototype	= languages.common
+	caption	= ML / OCaml
+	patterns	= *.ml;*.mli;*.sml;*.thy
+	open-comment	= (*
+	close-comment	= *)
+	statements	= abstype datatype eqtype type exception fun val fn and end in infix infixr let local land lor lsl lsr asr lnot lxor as of op or functor include open sharing sig signature struct structure where with andalso orelse else if case handle raise then do nonfix rec withtype while div mod o before downto match to when try assert class constraint inherit initializer lazy module mutable new object private virtual
+	constants	= false true nil QUOTE ANTIQUOTE NONE SOME LESS EQUAL GREATER
+	types	= array bool char exn frag int list option order real ref string substring unit vector word word8 Bind Chr Domain Div Fail Graphic Interrupt Io Match Option Ord Overflow Size Subscript SysErr
+end
+//[cf]
+//[of]://	PowerShell
+//def powershell
+//	prototype	= languages.common
+//	caption	= PowerShell
+//	stylizer	= batch
+//	patterns	= *.ps1
+//	line-comment	= #
+//	// Keywords containing dash are omitted because CB doesn't consider dash as a letter.
+//	statements	= break continue do else elseif filter for foreach function if in return switch until where while
+//	constants	= ac asnp clc cli clp clv cpi cpp cvpa diff epal epcsv fc fl foreach ft fw gal gc gci gcm gdr ghy gi gl gm gp gps group gsv gsnp gu gv gwmi iex ihy ii ipal ipcsv mi mp nal ndr ni nv oh rdr ri rni rnp rp rsnp rv rvpa sal sasv sc select si sl sleep sort sp spps spsv sv tee where write cat cd clear cp h history kill lp ls mount mv popd ps pushd pwd r rm rmdir echo cls chdir copy del dir erase move rd ren set type
+//end
+//[cf]
+//[of]:	R
+def r
+	prototype	= languages.common
+	caption	= R
+	patterns	= *.r
+	line-comment	= #
+	statements	= if else repeat while function for in next break TRUE FALSE NULL NA Inf NaN
+	constants	= abbreviate abline abs acf acos acosh addmargins aggregate agrep alarm alias alist all anova any aov aperm append apply approx approxfun apropos ar args arima array arrows asin asinh assign assocplot atan atanh attach attr attributes autoload autoloader ave axis backsolve barplot basename beta bindtextdomain binomial biplot bitmap bmp body box boxplot bquote break browser builtins bxp by bzfile c call cancor capabilities casefold cat category cbind ccf ceiling character charmatch chartr chol choose chull citation class close cm cmdscale codes coef coefficients col colnames colors colorspaces colours comment complex confint conflicts contour contrasts contributors convolve cophenetic coplot cor cos cosh cov covratio cpgram crossprod cummax cummin cumprod cumsum curve cut cutree cycle data dataentry date dbeta dbinom dcauchy dchisq de debug debugger decompose delay deltat demo dendrapply density deparse deriv det detach determinant deviance dexp df dfbeta dfbetas dffits dgamma dgeom dget dhyper diag diff diffinv difftime digamma dim dimnames dir dirname dist dlnorm dlogis dmultinom dnbinom dnorm dotchart double dpois dput drop dsignrank dt dump dunif duplicated dweibull dwilcox eapply ecdf edit effects eigen emacs embed end environment eval evalq example exists exp expression factanal factor factorial family fft fifo file filter find fitted fivenum fix floor flush for force formals format formula forwardsolve fourfoldplot frame frequency ftable function gamma gaussian gc gcinfo gctorture get getenv geterrmessage gettext gettextf getwd gl glm globalenv gray grep grey grid gsub gzcon gzfile hat hatvalues hcl hclust head heatmap help hist history hsv httpclient iconv iconvlist identical identify if ifelse image influence inherits integer integrate interaction interactive intersect invisible isoreg jitter jpeg julian kappa kernapply kernel kmeans knots kronecker ksmooth labels lag lapply layout lbeta lchoose lcm legend length letters levels lfactorial lgamma library licence license line lines list lm load loadhistory loadings local locator loess log logb logical loglin lowess ls lsfit machine mad mahalanobis makepredictcall manova mapply match matlines matplot matpoints matrix max mean median medpolish menu merge message methods mget min missing mode monthplot months mosaicplot mtext mvfft names napredict naprint naresid nargs nchar ncol next nextn ngettext nlevels nlm nls noquote nrow numeric objects offset open optim optimise optimize options order ordered outer pacf page pairlist pairs palette par parse paste pbeta pbinom pbirthday pcauchy pchisq pdf pentagamma person persp pexp pf pgamma pgeom phyper pi pico pictex pie piechart pipe plclust plnorm plogis plot pmatch pmax pmin pnbinom png pnorm points poisson poly polygon polym polyroot postscript power ppoints ppois ppr prcomp predict preplot pretty princomp print prmatrix prod profile profiler proj promax prompt provide psigamma psignrank pt ptukey punif pweibull pwilcox q qbeta qbinom qbirthday qcauchy qchisq qexp qf qgamma qgeom qhyper qlnorm qlogis qnbinom qnorm qpois qqline qqnorm qqplot qr qsignrank qt qtukey quantile quarters quasi quasibinomial quasipoisson quit qunif quote qweibull qwilcox rainbow range rank raw rbeta rbind rbinom rcauchy rchisq readline real recover rect reformulate regexpr relevel remove reorder rep repeat replace replicate replications require reshape resid residuals restart return rev rexp rf rgamma rgb rgeom rhyper rle rlnorm rlogis rm rmultinom rnbinom rnorm round row rownames rowsum rpois rsignrank rstandard rstudent rt rug runif runmed rweibull rwilcox sample sapply save savehistory scale scan screen screeplot sd search searchpaths seek segments seq sequence serialize setdiff setequal setwd shell sign signif sin single sinh sink smooth solve sort source spectrum spline splinefun split sprintf sqrt stack stars start stderr stdin stdout stem step stepfun stl stop stopifnot str strftime strheight stripchart strptime strsplit strtrim structure strwidth strwrap sub subset substitute substr substring sum summary sunflowerplot supsmu svd sweep switch symbols symnum system t table tabulate tail tan tanh tapply tempdir tempfile termplot terms tetragamma text time title toeplitz tolower topenv toupper trace traceback transform trigamma trunc truncate try ts tsdiag tsp typeof unclass undebug union unique uniroot unix unlink unlist unname unserialize unsplit unstack untrace unz update upgrade url var varimax vcov vector version vi vignette warning warnings weekdays weights which while window windows with write wsbrowser xedit xemacs xfig xinch xor xtabs xyinch yinch zapsmall
+	types	= acme aids aircondit amis aml banking barchart barley beaver bigcity boot brambles breslow bs bwplot calcium cane capability cav censboot channing city claridge cloth cloud coal condense contourplot control corr darwin densityplot dogs dotplot ducks empinf envelope environmental ethanol fir frets gpar grav gravity grob hirose histogram islay knn larrows levelplot llines logit lpoints lsegments lset ltext lvqinit lvqtest manaus melanoma melanoma motor multiedit neuro nitrofen nodal ns nuclear oneway parallel paulsen poisons polar qq qqmath remission rfs saddle salinity shingle simplex singer somgrid splom stripplot survival tau tmd tsboot tuna unit urine viewport wireframe wool xyplot
+end
+//[cf]
+//[of]:	Scala
+def scala
+	prototype	= languages.common
+	caption	= Scala
+	patterns	= *.scala
+	line-comment	= //
+	open-comment	= /*
+	close-comment	= */
+	statements	= abstract case catch class def do else extends final finally for forSome if implicit import lazy macro match new object override package private protected requires return sealed then throw trait try type val var with while yield
+	constants	= false null super this true
+	types	= Character Integer Boolean Byte Char Double Float Int Long Short Unit Any AnyRef Nothing
+end
+//[cf]
+//[of]://	Smalltalk
+//def smalltalk
+//	prototype	= languages.common
+//	caption	= Smalltalk
+//	patterns	= *.st
+//	string-delimiter	= '
+//	open-comment	= "
+//	close-comment	= "
+//	statements	= ifTrue ifFalse whileTrue whileFalse ifNil ifNotNil whileTrue whileFalse repeat isNil notNil
+//end
+//[cf]
+//[of]:	Yeti
+def yeti
+	prototype	= languages.scala
+	caption	= Yeti
+	patterns	= *.yeti
+	multi-line-strings	= true
+	statements	= do if case try done fi esac yrt catch finally then elif else loop of throw as unsafely_as instanceof new with synchronized module typedef var load is import class program
+	constants	= set get end extends static and or not in div b_and b_or xor shl shr
+end
+//[cf]
+	
+//[of]:	Last entry is used as the default language!?
+def default2
+	prototype	= languages.default
+end
+//[cf]
+end
+
+def key-mappings
+// One of Code Browser's two default key mappings (gtk-style) is based on the other (windows-style). Hence modify only windows-style.
+def windows-style
+	// Change so that line dragging can be assigned to ctrl+shift+up/down—a standard of Scintilla-based editors if I'm not misstaken. These are also closer to similarly behaving shortcuts alt+page up/down. Anyway the section ordering is kinda internal detail so that I wonder why these actions exist at all.
+	go-previous-section	= ctrl+shift+page up
+	go-next-section	= ctrl+shift+page down
+end
+end
+
+// By default system theme uses green error color. Swap this with red breakpoint color to follow standard usage.
+themes.system.error-color	= #F0A0A0
+themes.system.breakpoint-color	= #C8FFC8
