@@ -1,1 +1,1 @@
-Here's scripts for Code Browser text editor and syntax highlighting for more languages. Scripts include word completing, non real time column editing mode and line swapping/dragging.
+Here's scripts for Code Browser text editor and syntax highlighting for more languages. Scripts include word completing, non real time column editing and line dragging. Word move/select/delete operations are fixed to approximately recognise latin letters.

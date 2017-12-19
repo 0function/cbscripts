@@ -1,5 +1,39 @@
-//[of]:Utility functions
+//[of]:Common utilities
+//[of]:String
+// Functions for symmetric string traversal.
+function next(str, j, forward)
+	return forward cond	j<0 cond 0 else str next(j) else
+		j>0 cond str previous(j) else -1
+end
+function in(str, j)
+	//return j >= 0 and j < str size
+	return (j & 0xFffFFff) < str size
+end
+
+function indexOf(c, str, start)
+	var j = str indexOf(c,start)
+	return j isNil cond str size else j
+end
+//[cf]
 //[of]:Order
+// Pos stores an arbitrary position in a file as one unit. Usage conventions vary, e.g. minPos and maxPos below don't use section field.
+class Pos
+	attr S	// section
+	attr l	// line
+	attr c	// column
+end
+function lcPos(l,c)
+	var p	= Pos basicNew
+	p l	= l
+	p c	= c
+	return p
+end
+function newPos(S,l,c)
+	var p = lcPos(l,c)
+	p S = S
+	return p
+end
+
 function min(x,y)
 	return x < y cond x else y
 end
@@ -7,33 +41,11 @@ function max(x,y)
 	return x > y cond x else y
 end
 
-// Pos stores an arbitrary position in a file as one unit. Usage conventions vary, e.g. the functions below don't use section field.
-class Pos
-	attr S	// section
-	attr l	// line
-	attr c	// column
-end
-function minPos(l1,c1, l2,c2)
-	var p = Pos basicNew
-	if l1<l2 or (l1==l2 and c1<c2)
-		p l	= l1
-		p c	= c1
-	else
-		p l	= l2
-		p c	= c2
-	end
-	return p
-end
-function maxPos(l1,c1, l2,c2)
-	var p = Pos basicNew
-	if l1<l2 or (l1==l2 and c1<c2)
-		p l	= l2
-		p c	= c2
-	else
-		p l	= l1
-		p c	= c1
-	end
-	return p
+//function minPos(l1,c1, l2,c2)
+//	return l1<l2 or (l1==l2 and c1<c2) cond lcPos(l1,c1) else lcPos(l2,c2)
+//end
+function maxPos(not_min, l1,c1, l2,c2)
+	return not_min == (l1<l2 or (l1==l2 and c1<c2)) cond lcPos(l2,c2) else lcPos(l1,c1)
 end
 
 function sign(x)
@@ -62,11 +74,123 @@ function jj
 	return debug
 end
 //[cf]
-
-function indexOf(c, str, start)
-	var j = str indexOf(c,start)
-	return j isNil cond str size else j
+//[of]:Numbers & characters
+// Is character a letter? Combining diacritics are accepted too. This is a decent approximation for latin languages—CB doesn't natively support character classes.
+function letter(c)
+	var i = c toInteger | 0x20
+	return i<0xC0 cond	(i-97 &0xFF) < 26 else	// 3 false negative: µªº
+		(i<0x500 and i<>0xF7)	// 50 false positive up to 0x500
 end
+
+// Is character a breaking space?
+function space(c)
+	// This implementation happens to accept also ASCII control characters, which is irrelevant because intented use is to text document's characters.
+	return c <= \w or (c toInteger & 0xFFDFFF) < 13
+end
+
+// Is character one that doesn't usually break either words or symbol sequences?
+function joiner(c)
+	return c==$_ or c==$' or c==$ //no-break space
+end
+
+function digit(c)
+	return $0<=c and c<=$9
+end
+function hexdigit(c)
+	return ($0<=c and c<=$9) or ($A<=c and c<=$F) or ($a<=c and c<=$f)
+end
+
+function toBase(b,n)
+	if n < 1
+		return n<0 cond "-"+toBase(b,-n) else "0"
+	end
+	var hex	= ""
+	var m	= n
+	while m > 0
+		hex = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ"[m%b]toString + hex
+		m = m / b
+	end
+	return hex
+end
+function d2h(n)
+	return toBase(16,n)
+end
+function d2b(n)
+	return toBase(2,n)
+end
+
+function fromBase(b,s)
+	var n	= 0
+	s each do c
+		//	to lower	0 ↦ 0	remove gap
+		n = b*n + ((c toInteger	| 0x20)	+ 0x1E)	% 0x27
+	end
+	return n
+end
+function h2d(s)
+	return fromBase(16,s)
+end
+function b2d(s)
+	return fromBase(2,s)
+end
+
+// Save natural number (e.g. S, l, c) as a string of one character.
+// Strings can't contain nulls \0 and it's good to avoid linebreaks too so there's offset 14. TODO avoid surrogate range [D800, E000[ (and other unicode's pitfalls!)
+function code(n)
+	return (n+14)toChar toString
+end
+// Inverse of the previous (modulo types).
+function val(c)
+	return c toInteger - 14
+end
+//[cf]
+//[of]:Word movement
+function nextWord(F,S,l,c, forward, skipFinalSpace, change_line)
+	var T	= F text(S,l)
+	var p	= newPos(S, l, forward cond c else next(T, c, false))
+	var changeLine = change_line
+	var skippedSymbols = 0
+	// Possibly repeat word-jump once in order to skip atleast two symbols.
+	while skippedSymbols < 2
+		// Always first skip spaces. Stop if line changes.
+		if skipSpace(F, p, forward, changeLine) or p l <> l
+			break
+		end
+		// Skip word consisting entirely of letters+digits or entirely of other symbols. Joining characters may be included too.
+		var letdig	= letter(T[p c]) or digit(T[p c])
+		while in(T, p c) and not space(T[p c]) and (letdig == (letter(T[p c]) or digit(T[p c])) or joiner(T[p c]))
+			p c = next(T, p c, forward)
+			skippedSymbols = skippedSymbols + 1
+			changeLine = false // Don't change line after any symbol.
+		end
+	end
+	
+	if skipFinalSpace
+		skipSpace(F, p, forward, changeLine)
+	end
+	p c = forward cond p c else next(F text(S, p l), p c, true)
+	return p
+end
+
+// Return true if the beginning of section/line was reached.
+function skipSpace(F, p, forward, changeLine)
+	var T = F text(p S, p l)
+	while true
+		if in(T, p c)
+			if not space(T[p c])
+				return false
+			end
+			p c = next(T, p c, forward)
+		elsif changeLine and (forward cond p l < F height(p S) -1 else p l > 0)
+			p l	= p l + (forward cond 1 else -1)
+			T	= F text(p S, p l)
+			p c	= forward cond 0 else T size -1
+		else
+			return true
+		end
+	end
+end
+//[cf]
 
 function dirSepIndex(path)
 	var j = path size
@@ -86,37 +210,31 @@ function name(file)
 	return file range(j+1, file size -j-1)
 end
 
-// Save natural number (e.g. S, l, c) as a string of one character.
-// Strings can't contain nulls \0 and it's good to avoid linebreaks too so there's offset 14. TODO avoid surrogate range [D800, E000[ (and other unicode's pitfalls...)
-function code(n)
-	return (n+14)toChar toString
-end
-// Inverse of the previous (modulo types).
-function val(c)
-	return c toInteger - 14
-end
 //[cf]
 
 function initialize(CB)
+//	CB addCommand("charOrd",	"&Hex code ↔ character",	"ctrl+H",	ref charOrd,	"")
 	CB addCommand("openLink",	"&Open file or hyperlink",	"",	ref openLink,	"")
-	CB addCommand("increment",	"&Increment number",	"",	ref increment,	"")
+//	CB addCommand("increment",	"&Increment number",	"",	ref increment,	"")
+	CB addCommand("complete",	"&Complete word",	"ctrl+space",	ref complete_orColumnEdit,	"")
+	CB addCommand("goToChar",	"&Quick go to character",	"Q",	ref goToChar,	"")
+	CB addCommand("wordLeft",	"Move word left",	"ctrl+left",	ref wordLeft,	"")
+	CB addCommand("wordRight",	"Move word right",	"ctrl+right",	ref wordRight,	"")
+	CB addCommand("selWordLeft",	"Select word left",	"ctrl+shift+left",	ref selWordLeft,	"")
+	CB addCommand("selWordRight",	"Select word right",	"ctrl+shift+right",	ref selWordRight,	"")
+	CB addCommand("delWordLeft",	"Delete word left",	"ctrl+backspace",	ref delWordLeft,	"")
+	CB addCommand("delWordRight",	"Delete word right",	"ctrl+delete",	ref delWordRight,	"")
 	CB addCommand("dragUp",	"Move selected lines &up",	"ctrl+shift+up",	ref dragUp,	"")
 	CB addCommand("dragDown",	"Move selected lines &down",	"ctrl+shift+down",	ref dragDown,	"")
 //	CB addCommand("findReplace",	"Find && replace",	"ctrl+shift+F",	ref findReplace,	"")
-	CB addCommand("complete",	"&Complete word",	"ctrl+space",	ref complete_orColumnEdit,	"")
 	addMultiCursorCommands(CB)
 end
 
 //[of]:Column and multi-cursor editing
 // This works by making basic keys (like left and right arrows) shortcuts in the context of Column editing mode -“language”. Because of tool limit only keys that just move cursor or remove text are made shortcuts. The rest are assumed to just add text and these additions are copied to other selected lines when shortcut key is pressed. Similarly the mode turns off no sooner than a shortcut key is pressed after the cursor has changed line. Most notable limitations are lack of selections (scripts can't directly access clipboard, and so many new keys would require overriding that we would hit the tool limit) and lack of undo during column editing (positions on other lines can't be recovered...with sensible amount of work). Trying these likely crashes the script.
 //[of]:Parameters
-function markType
+function markStyle
 	return "breakpoint"
-end
-//[cf]
-//[of]:Utilities
-function Add(cb, key, act)
-	cb addCommand(key+"(hidden)", "", key, act, "column-and-multi-cursor")
 end
 //[cf]
 function addMultiCursorCommands(cb)
@@ -130,7 +248,10 @@ Add(cb,	"delete",	ref Delete)
 //[cf]
 end
 //[of]:...and their definitions.
-// TODO Ctrl+Left, Ctrl+Right, Ctrl+Delete, Ctrl+BackSpace
+function Add(cb, key, act)
+	cb addCommand(key+"(hidden)", "", key, act, "column-and-multi-cursor")
+end
+
 function Left(fr,_)
 	forEachCursor(fr) do p,F
 		p c = p c > 0 cond p c -1 else p c
@@ -180,7 +301,7 @@ function multiCursorOn(frame,_)
 		return
 	end
 	if T indexOf("\a",0) notNil // Column mode is already on ⟹ exit in order to start fresh.
-		// If cursor has changed line, this exits automatically. Other cases count as abuse.
+		// If cursor has changed line, this exits automatically. If it hasn't, that counts as abuse.
 		forEachCursor(frame)do p,F
 		end
 	end
@@ -239,7 +360,7 @@ function multiCursorOff(frame,_)
 	var bj	= T indexOf("\b",aj)
 	F setTitle(T range(bj+1, T size -bj-1))
 	F setLanguage(T range(aj+1, bj-aj-1))
-	F unmarkAll(frame activeWindow section, markType)
+	F unmarkAll(frame activeWindow section, markStyle)
 end
 
 function forEachCursor(frame)
@@ -249,7 +370,7 @@ function forEachCursor(frame)
 	var j	= 0
 	var p	= Pos basicNew
 	p S	= W section
-	F unmarkAll(p S, markType)
+	F unmarkAll(p S, markStyle)
 	p l	= val(T[j])
 		j = T next(j)
 	var step	= val(T[j]) - 1
@@ -258,18 +379,20 @@ function forEachCursor(frame)
 		j = T next(j)
 	p c	= val(T[j])
 		j = T next(j)
-	var exit = p l <> W cursorLine // If cursor changes line, no further edit will take place, but non-real-time updates must still be made for other lines.
+	var exit = p l <> W cursorLine // If cursor changes line, only propagate non real time updates to other lines. However do edit at the cursor's new location (don't waste the keystroke to exiting mode).
 	var text = F text(p S, p l)
 	var addedText = F newBlockFromString(text range(p c, text size - length))
 	length = addedText rowText(0) size
 	var positions = StringBuffer new
-	// Handle cursor's line.
+	// Handle cursor's line. Remember that cursor may have changed line and stopped column editing.
+	p c	= W cursorColumn
+	p l	= W cursorLine
+	yield p,F
+	W moveCursor(p l, p c, false)
+	p l = val(T[0])
 	if not exit
-		p c = p c + length
-		yield p,F
-		F mark(p S, markType, p l, p c, F text(p S, p l) size + 1 - p c, nil)
-		W moveCursor(p l, p c, false)
-		positions << T[0] << T[1] << code(F text(p S, p l) size) << code(p c)
+		F mark(p S, markStyle, p l, p c, F text(p S, p l) size + 1 - p c, nil)
+		positions << T[0] << T[T next(0)] << code(F text(p S, p l) size) << code(p c)
 	end
 	// Handle other lines uniformly in a loop.
 	while T[j] <> "\a"[0]
@@ -282,7 +405,7 @@ function forEachCursor(frame)
 		end
 		if not exit
 			yield p,F
-			F mark(p S, markType, p l, p c, F text(p S, p l) size + 1 - p c, nil)
+			F mark(p S, markStyle, p l, p c, F text(p S, p l) size + 1 - p c, nil)
 			positions << code(p c)
 		end
 	end
@@ -293,7 +416,158 @@ function forEachCursor(frame)
 	end
 end
 //[cf]
-//[of]:Find & replace
+//[of]:Core functionality changes
+//[of]:Word movement actions
+function selWordLeft(frame, app)
+	selectWord(frame, false, false)
+end
+function selWordRight(frame, app)
+	selectWord(frame, true, true)
+end
+function wordLeft(frame, app)
+	moveWord(frame, false, false)
+end
+function wordRight(frame, app)
+	moveWord(frame, true, true)
+end
+function delWordLeft(frame, app)
+	deleteWord(frame, false, false)
+end
+function delWordRight(frame, app)
+	deleteWord(frame, true, true)
+end
+//[cf]
+//[of]:Word movement implementation
+function selectWord(frame, forward, skipSpace)
+	var W	= frame activeWindow
+	var p	= nextWord(W file, W section, W cursorLine, W cursorColumn, forward, skipSpace, true)
+	W moveCursor(p l, p c, true)
+	W adjustPage
+end
+
+function moveWord(frame, forward, skipSpace)
+	var W	= frame activeWindow
+	var F	= W file
+	var S	= W section
+	if F language == "column-and-multi-cursor"
+		forEachCursor(frame) do p,F
+			p c = nextWord(F,S, p l, p c, forward, skipSpace, false) c
+		end
+	else
+		var l	= W cursorLine
+		var c	= W cursorColumn
+		var p	=	l == W markLine and c == W markColumn cond
+				nextWord(F,S,l,c, forward, skipSpace, true) else
+				maxPos(forward, l,c, W markLine, W markColumn)
+		W moveCursor(p l, p c, false)
+		W adjustPage
+	end
+end
+
+function deleteWord(frame, forward, skipSpace)
+	var W	= frame activeWindow
+	var F	= W file
+	var S	= W section
+	if F language == "column-and-multi-cursor"
+		forEachCursor(frame) do p,F
+			var c = nextWord(F,S, p l, p c, forward, skipSpace, false) c
+			F replaceText(S, p l, c, p l, p c, F newBlock)
+			p c = min(c, p c)
+		end
+	else
+		W insertString("")
+		var l	= W cursorLine
+		var c	= W cursorColumn
+		var p	= nextWord(F,S,l,c, forward, skipSpace, true)
+		F replaceText(S, l,c, p l, p c, F newBlock)
+		W adjustPage
+	end
+end
+//[cf]
+//[of]:Quick go to character
+function goToChar(frame, app)
+	var W	= frame activeWindow
+	var F	= W file
+	var S	= W section
+	var l	= W cursorLine
+	var c	= W cursorColumn
+	if c==0
+		W insertChar($q)
+		return
+	end
+	var text	= F text(S,l)
+	var _c	= text previous(c)
+	var key	= text[_c]
+	var k	= key toLower
+	
+	if $a<=k and k<=$z
+		F replaceText(S, l,_c, l,c, F newBlock)
+		// Use ijkl because of their convenient layout.
+		if k==$i
+			var j = l
+			while j > 0 and (not emptySpace(F text(S,j)) or emptySpace(F text(S,j-1)))
+				j = j-1
+			end
+			j = max(j-1, 0)
+			W moveCursor(j, F text(S,j) size, key<>k)
+			W centerPage
+		elsif k==$j
+			var j = 0
+			while j < text size and space(text[j])
+				j = text next(j)
+			end
+			W moveCursor(l, _c==j cond 0 else j, key<>k)
+		elsif k==$k
+			var j = l
+			while j+1 < F height(S) and (not emptySpace(F text(S,j)) or emptySpace(F text(S,j+1)))
+				j = j+1
+			end
+			j = min(j+1, F height(S) -1)
+			W moveCursor(j, F text(S,j) size, key<>k)
+			W centerPage
+		elsif k==$l
+			W moveCursor(l, text size -1, key<>k) // Note that text contains the removed l.
+		
+		elsif k==$n // Next line's beginning
+			W moveCursor(min(l+1, F height(S) -1), 0, key<>k)
+		elsif k==$p // Previous line's beginning
+			W moveCursor(max(l-1, 0), 0, key<>k)
+		elsif k==$t // just Type q
+			W insertChar($q)
+		else
+			W insertChar(key)
+			W insertChar($q)
+		end
+	else
+		var again	= c <> W markColumn
+		F startGroup
+		F replaceText(S, l,_c, l,c, F newBlock) // Make sure we won't find the original.
+		var f = Finder new(key toString, true, false, false, true, true)
+		// First wrap inside line, then inside section.
+		if (f find(F,S,l,_c, false, true) and f line == l) or f find(F,S,l, F text(S,l) size, true, true)
+			W select(f line, f column, f line, f column + f size)
+			if again // ↕ ∃ bug ∊ repeated characters—not severe, don't trade for complexity!
+				F replaceText(S, l,_c, l,_c, F newBlockFromString(key toString))
+			end
+		else
+			W insertChar(key)
+			W select(l,c,l,_c)
+		end
+		F stopGroup
+	end
+end
+
+function emptySpace(str)
+	str each do c
+		if not space(c)
+			return false
+		end
+	end
+	return true
+end
+//[cf]
+//[cf]
+//[of]:Find & replace (unfunctional)
 function findReplace(frame, app)
 	var W	= frame activeWindow
 	var F	= W file
@@ -308,8 +582,8 @@ function findReplace(frame, app)
 	key each do c
 		word = word and (($a<=c and c<=$z) or ($A<=c and c<=$Z) or ($0<=c and c<=$9))
 	end
-	var start	= minPos(W cursorLine, W cursorColumn, W markLine, W markColumn)
-	var stop	= maxPos(W cursorLine, W cursorColumn, W markLine, W markColumn)
+	var start	= maxPos(false,	W cursorLine, W cursorColumn, W markLine, W markColumn)
+	var stop	= maxPos(true,	W cursorLine, W cursorColumn, W markLine, W markColumn)
 	var search	= Finder new(key, false, word, not word, true, true)
 	while search find(F, S, start l, start c, false, false)
 		var l	= search line
@@ -358,6 +632,32 @@ end
 	end
 end
 //[cf]
+//[of]:Hex code ↔ character
+function charOrd(frame, app)
+	var W	= frame activeWindow
+	var F	= W file
+	var S	= W section
+	var l	= W cursorLine
+	var c	= W cursorColumn
+	if c==0
+		return
+	end
+	var text	= F text(S,l)
+	var j	= c
+	while j > max(0,c-6) and hexdigit(text[text previous(j)])
+		j = text previous(j)
+	end
+	// Undo works for this also without explicit grouping.
+	if c-j > 1
+		F replaceText(S, l,j, l,c, F newBlock)
+		W insertChar(h2d(text range(j,c-j)) toChar)
+	else
+		j = text previous(c)
+		F replaceText(S, l,j, l,c, F newBlock)
+		W insertString(d2h(text[j] toInteger))
+	end
+end
+//[cf]
 //[of]:Increment number
 function increment(frame, app)
 	var W	= frame activeWindow
@@ -376,10 +676,6 @@ function increment(frame, app)
 	end
 	var num = (line range(c,size) toInteger + 1)toString
 	W replaceSelection(F newBlockFromString(num), true)
-end
-
-function digit(d)
-	return $0<=d and d<=$9
 end
 //[cf]
 //[of]:Open links
@@ -410,21 +706,21 @@ function dragDown(frame, app)
 end
 
 // Utility: replace text with the limit columns at the ends of the lines.
-function replaceAtEnd(file, S, start, count, text)
-	file replaceText(S, start, file width(S, start), start+count, file width(S, start+count), text)
+function replaceAtEnd(F, S, start, count, text)
+	F replaceText(S, start, F width(S, start), start+count, F width(S, start+count), text)
 end
 
 // Move the selected lines up(=true) or down (up=false).
 // Technically just one line next to the group of selected lines is moved.
 function drag(frame, up)
-	var win	= frame activeWindow
-	var file	= win file
-	var S	= win section
+	var W	= frame activeWindow
+	var F	= W file
+	var S	= W section
 	// Save the selected region so that it can be restored in the end.
-	var curCol	= win cursorColumn
-	var curLine	= win cursorLine
-	var selCol	= win markColumn
-	var selLine	= win markLine
+	var curCol	= W cursorColumn
+	var curLine	= W cursorLine
+	var selCol	= W markColumn
+	var selLine	= W markLine
 	
 	var from	= min(curLine, selLine)	// first selected line
 	var to	= max(curLine, selLine)	// last selected line
@@ -434,28 +730,28 @@ function drag(frame, up)
 	var pasteLine	= up cond to	else from-1
 	var cpMaxLine	= max(cutLine, pasteLine)
 	
-	var lastLine = file height(S) -1
+	var lastLine = F height(S) -1
 	// Check if it's possible to move lines up or down.
 	if cutLine < 0 or pasteLine < -1 or cpMaxLine > lastLine
 		return
 	end
 	
-file startGroup
+F startGroup
 	if cpMaxLine == lastLine // Extra linebreak is needed for cutting or pasting.
-		replaceAtEnd(file,S, lastLine, 0, file newBlockFromString("\n"))
+		replaceAtEnd(F,S, lastLine, 0, F newBlockFromString("\n"))
 	end
 	// cut&paste = select, copy, paste, delete
-	win select(cutLine, 0, cutLine+1, 0)
-	file replaceText(S, pasteLine+1, 0, pasteLine+1, 0, win copySelection)
-	win deleteSelection
+	W select(cutLine, 0, cutLine+1, 0)
+	F replaceText(S, pasteLine+1, 0, pasteLine+1, 0, W copySelection)
+	W deleteSelection
 	
 	if cpMaxLine == lastLine // Remove an extra linebreak.
-		replaceAtEnd(file,S, lastLine, 1, file newBlock)
+		replaceAtEnd(F,S, lastLine, 1, F newBlock)
 	end
 	// Restore the original selection.
 	var m = up cond -1 else 1
-	win select(selLine+m, selCol, curLine+m, curCol)
-file stopGroup
+	W select(selLine+m, selCol, curLine+m, curCol)
+F stopGroup
 end
 //[cf]
 //[of]:Word completion
@@ -469,9 +765,9 @@ function breaks(s,c)
 	return s < separation(c)
 end
 
-// Determine how strong word boundary a character is. Dumping all non-ascii characters to class 1 works well as long as their should-be-classes are separated by characters outside class 1. Class 0 must contain atleast letters according to CB's regexp and hence underscore _ can't be in class 1.
+// Determine how strong word boundary a character is. Dumping all non-ascii characters to class 1 works well as long as their should-be-classes are separated by characters outside class 1.
 // 0 (never break)	1 (may break, fill always)	2	3	4
-// a-z_A-Z	0-9'non-ascii	+-*/!?.:|\@#$%&~`^	()[]{}<>=	"space,;tab
+// a-zA-Z	0-9_'non-ascii	+-*/!?.:|\@#$%&~`^	()[]{}<>=	"space,;tab
 function separation(c)
 	return c > $~ cond 1 else c < \w cond 4 else
 	// This is one of the rare situations where monospaced fonts are usefull...
@@ -536,7 +832,7 @@ function completeLocally(local, W, old0)
 	var T0	= F text(S,l)
 //[of]:	var w	= non-empty word before cursor
 if c==0
-	return
+	return false
 end
 var j = c
 // Decrement j until one finds a word boundary (separation class increases).
@@ -584,7 +880,7 @@ end
 var t0	= T0 toLower
 var t	= T toLower
 j	= fc
-var j0	= c
+var j0	= c - w size
 var jok	= j
 while true
 	var _j	= 0==j	cond -1 else t	previous(j)
@@ -603,7 +899,7 @@ end
 var _w = T range(jok, fc - jok) + w
 //[cf]
 //[of]:		var fill2 = text after the match
-var extras	= ""	// Will contain valid completion characters outside classes 0 adn 1.
+var extras	= ""	// Will contain valid completion characters outside classes 0 and 1.
 _w each do c
 	var s = separation(c)
 	if s > 1 and extras indexOf(c toString, 0) isNil
@@ -620,6 +916,7 @@ while true
 	if s > 1 and s > separation(T[_j])
 		jok = j
 	end
+	var i = extras indexOf(Tj toString, 0)
 	if s > 1 and extras indexOf(Tj toString, 0) isNil
 		break
 	end
@@ -627,6 +924,7 @@ while true
 end
 var fill2 = T range(j0, jok - j0)
 //[cf]
+//		jj-w-_w-fill2<0
 		if fill2 size >= minCompletionLength and fill2<>fill and isNew(fill2, old, F)
 		// Now completion is valid and new, but it may still be suboptimal.
 		count = count + 1

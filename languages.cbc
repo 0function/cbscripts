@@ -126,6 +126,7 @@ end
 //	stylizer	= batch
 //	patterns	= *.ps1
 //	line-comment	= #
+//	ignore-case	= true
 //	// Keywords containing dash are omitted because CB doesn't consider dash as a letter.
 //	statements	= break continue do else elseif filter for foreach function if in return switch until where while
 //	constants	= ac asnp clc cli clp clv cpi cpp cvpa diff epal epcsv fc fl foreach ft fw gal gc gci gcm gdr ghy gi gl gm gp gps group gsv gsnp gu gv gwmi iex ihy ii ipal ipcsv mi mp nal ndr ni nv oh rdr ri rni rnp rp rsnp rv rvpa sal sasv sc select si sl sleep sort sp spps spsv sv tee where write cat cd clear cp h history kill lp ls mount mv popd ps pushd pwd r rm rmdir echo cls chdir copy del dir erase move rd ren set type
@@ -176,7 +177,6 @@ def yeti
 	constants	= set get end extends static and or not in div b_and b_or xor shl shr
 end
 //[cf]
-	
 //[of]:	Last entry is used as the default language!?
 def default2
 	prototype	= languages.default
